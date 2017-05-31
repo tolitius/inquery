@@ -9,30 +9,30 @@ vanilla SQL with params
 * no dependencies
 * no edn SQL
 
-just "read SQL with :params"
+just "read SQL with `:params`"
 
 [![Clojars Project](https://clojars.org/tolitius/inquery/latest-version.svg)](http://clojars.org/tolitius/inquery)
 
-## why
+## Why
 
 SQL is a great language, it is very expressive and exremely well optimized and supported by "SQL" databases.
-I don't belive it needs any kind of wrappers and it should live in its pure SQL form.
+I don't believe it needs any kind of wrappers. It should live in its pure SQL form.
 
 `inquery` does two things:
 
 * reads SQL files
-* substitute params at runtime
+* substitutes params at runtime
 
 Clojure APIs cover all the rest
 
-## using inquery
-
-There is nothing really to do other than bring the queries into a map with a `make-query-map` function.
+## Using inquery
 
 `inquery` is about SQL: it _does not_ require or force a particular JDBC library or a database.
 
-This example will use [funcool/clojure.jdbc](http://funcool.github.io/clojure.jdbc/latest/) to speak to
+But to demo an actual database conversation, this example will use "[funcool/clojure.jdbc](http://funcool.github.io/clojure.jdbc/latest/)" to speak to
 a sample [H2](http://www.h2database.com/html/main.html) database since both of them are great.
+
+There is nothing really to do other than to bring the queries into a map with a `make-query-map` function:
 
 ```clojure
 $ boot dev
@@ -41,7 +41,7 @@ boot.user=> (require '[inquery.core :as q]
                      '[jdbc.core :as jdbc])
 ```
 
-`dbspec` along with a `set of queries` would usually come from config.edn / consul / etc :
+`dbspec` along with a `set of queries` would usually come from `config.edn` / consul / etc :
 
 ```clojure
 boot.user=> (def dbspec
@@ -54,9 +54,9 @@ boot.user=> (def queries
                                   :find-planets-by-mass}))
 ```
 
-`inquiry` by default will look into `sql/*` path for queries. in this case "dev-resources" is in a classpath:
+`inquiry` by default will look under `sql/*` path for queries. In this case "[dev-resources](dev-resources)" is in a classpath:
 
-```vim
+```
 ▾ dev-resources/sql/
       create-planets.sql
       find-planets-by-mass.sql
@@ -70,7 +70,7 @@ boot.user=> (with-open [conn (jdbc/connection dbspec)]
               (jdbc/execute conn (:create-planets queries)))
 ```
 
-checking out the solar system:
+check out the solar system:
 
 ```clojure
 boot.user=> (with-open [conn (jdbc/connection dbspec)]
@@ -103,7 +103,7 @@ boot.user=> (with-open [conn (jdbc/connection dbspec)]
 
 ## scratchpad
 
-development [scratchpad](dev/scratchpad.clj) with sample shorcuts:
+development [scratchpad](dev/scratchpad.clj) with sample shortcuts:
 
 ```clojure
 $ boot dev
