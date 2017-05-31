@@ -1,6 +1,6 @@
 # inquery
 
-vanilla SQL with params
+vanilla SQL with params for Clojure/Script
 
 * no DSL
 * no comments parsing
@@ -99,6 +99,62 @@ boot.user=> (with-open [conn (jdbc/connection dbspec)]
  {:id 3, :name "Earth", :mass 5973.6M}
  {:id 4, :name "Mars", :mass 641.85M}
  {:id 9, :name "Pluto", :mass 13.105M}]
+```
+
+## ClojureScript
+
+```clojure
+$ lumo -i src/inquery/core.cljc --repl
+Lumo 1.2.0
+ClojureScript 1.9.482
+ Docs: (doc function-name-here)
+ Exit: Control+D or :cljs/quit or exit
+
+cljs.user=> (ns inquery.core)
+```
+
+depending on how a resource path is setup, an optional parameter `{:path "..."}`
+could help to specify the path to queries:
+
+```clojure
+inquery.core=> (def queries
+                 (make-query-map #{:create-planets
+                                   :find-planets
+                                   :find-planets-by-mass}
+                                 {:path "dev-resources/sql"}))
+#'inquery.core/queries
+```
+
+```clojure
+inquery.core=> (print queries)
+
+{:create-planets -- create planets
+drop table if exists planets;
+create table planets (id bigint auto_increment, name varchar, mass decimal);
+
+insert into planets (name, mass) values ('Mercury', 330.2),
+                                        ('Venus', 4868.5),
+                                        ('Earth', 5973.6),
+                                        ('Mars', 641.85),
+                                        ('Jupiter', 1898600),
+                                        ('Saturn', 568460),
+                                        ('Uranus', 86832),
+                                        ('Neptune', 102430),
+                                        ('Pluto', 13.105);
+, :find-planets -- find all planets
+select * from planets;
+, :find-planets-by-mass -- find planets under a certain mass
+select * from planets where mass <= :max-mass
+}
+```
+
+```clojure
+inquery.core=> (-> queries
+                   :find-planets-by-mass
+                   (with-params {:max-mass 5973.6}))
+
+-- find planets under a certain mass
+select * from planets where mass <= 5973.6
 ```
 
 ## scratchpad
