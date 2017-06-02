@@ -32,7 +32,22 @@
                 (read-query path)
                 (vector qname))))))
 
-(defn with-params [query params]
-  (reduce-kv (fn [q k v]
-               (s/replace q (str k) (str v)))
-             query params))
+(defn escape-params [params mode]
+  (let [esc (case mode
+              :ansi #(str \" (s/replace % "\"" "\"\"") \")  ;;
+              :mysql #(str \` (s/replace % "`" "``") \`)    ;; TODO: maybe later when returning a sqlvec
+              :mssql #(str \[ (s/replace % "]" "]]") \])    ;;
+              #(str "'" (s/replace % "'" "''") "'"))]
+    (into {} (for [[k v] params]
+               [k (if (string? v)
+                    (esc v)
+                    (str v))]))))
+
+(defn with-params
+  ([query params]
+   (with-params query params {}))
+  ([query params {:keys [esc]}]
+   (let [eparams (escape-params params esc)]
+     (reduce-kv (fn [q k v]
+                  (s/replace q (str k) v))
+                query eparams))))
