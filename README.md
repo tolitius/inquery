@@ -51,7 +51,8 @@ boot.user=> (def dbspec
 boot.user=> (def queries
               (q/make-query-map #{:create-planets
                                   :find-planets
-                                  :find-planets-by-mass}))
+                                  :find-planets-by-mass
+                                  :find-planets-by-name}))
 ```
 
 `inquiry` by default will look under `sql/*` path for queries. In this case "[dev-resources](dev-resources)" is in a classpath:
@@ -60,6 +61,7 @@ boot.user=> (def queries
 ▾ dev-resources/sql/
       create-planets.sql
       find-planets-by-mass.sql
+      find-planets-by-name.sql
       find-planets.sql
 ```
 
@@ -99,6 +101,16 @@ boot.user=> (with-open [conn (jdbc/connection dbspec)]
  {:id 3, :name "Earth", :mass 5973.6M}
  {:id 4, :name "Mars", :mass 641.85M}
  {:id 9, :name "Pluto", :mass 13.105M}]
+```
+
+which planet is the most `art`sy:
+
+```clojure
+boot.user=> (with-open [conn (jdbc/connection dbspec)]
+              (jdbc/fetch conn (-> (:find-planets-by-name queries)
+                               (q/with-params {:name "%art%"}))))
+
+[{:id 3, :name "Earth", :mass 5973.6M}]
 ```
 
 ## ClojureScript
