@@ -7,8 +7,11 @@
 #?(:cljs
     (defn read-query [path qname]
       (let [fname (str path "/" qname ".sql")]
-        (.toString
-          (.readFileSync (node/require "fs") fname)))))
+        (try
+          (.toString
+            (.readFileSync (node/require "fs") fname))
+          (catch :default e
+            (throw (js/Error. (str "can't find query file to load: \"" fname "\": " e))))))))
 
 #?(:clj
     (defn read-query [path qname]
