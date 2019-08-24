@@ -1,4 +1,4 @@
-(def +version+ "0.1.3-SNAPSHOT")
+(def +version+ "0.1.3")
 
 (set-env!
   :source-paths #{"src"}
@@ -9,7 +9,7 @@
                   [adzerk/bootlaces         "0.1.13"          :scope "test"]
                   [adzerk/boot-test         "1.0.6"           :scope "test"]
                   [tolitius/boot-check      "0.1.4"           :scope "test"]
-                  
+
                   ;; scratchpad
                   [funcool/clojure.jdbc     "0.9.0"           :scope "test"]
                   [com.h2database/h2        "1.4.195"         :scope "test"]])

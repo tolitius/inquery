@@ -37,6 +37,7 @@
               :ansi #(str \" (s/replace % "\"" "\"\"") \")  ;;
               :mysql #(str \` (s/replace % "`" "``") \`)    ;; TODO: maybe later when returning a sqlvec
               :mssql #(str \[ (s/replace % "]" "]]") \])    ;;
+              :don't identity
               #(str "'" (s/replace % "'" "''") "'"))]
     (into {} (for [[k v] params]
                [k (if (string? v)
