@@ -48,7 +48,9 @@
   ([query params]
    (with-params query params {}))
   ([query params {:keys [esc]}]
-   (let [eparams (escape-params params esc)]
-     (reduce-kv (fn [q k v]
-                  (s/replace q (str k) v))
-                query eparams))))
+   (if (seq query)
+     (let [eparams (escape-params params esc)]
+       (reduce-kv (fn [q k v]
+                    (s/replace q (str k) v))
+                  query eparams))
+     (throw (ex-info "can't execute an empty query" {:params params})))))
