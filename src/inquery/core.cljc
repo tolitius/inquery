@@ -44,6 +44,14 @@
                     (esc v)
                     (str v))]))))
 
+(defn seq->in-params
+  ;; convert seqs to IN params: i.e. [1 "2" 3] => "('1','2','3')"
+  [xs]
+  (as-> xs $
+        (map #(str "'" % "'") $)
+        (s/join "," $)
+        (str "(" $ ")")))
+
 (defn with-params
   ([query params]
    (with-params query params {}))
