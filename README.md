@@ -1,14 +1,5 @@
 # inquery
 
-- [why](#why)
-- [using inquery](#using-inquery)
-  - [dynamic queries](#dynamic-queries)
-- [ClojureScript](#clojurescript)
-- [scratchpad](#scratchpad)
-- [license](#license)
-
-[![Clojars Project](https://clojars.org/tolitius/inquery/latest-version.svg)](http://clojars.org/tolitius/inquery)
-
 vanilla SQL with params for Clojure/Script
 
 * no DSL
@@ -20,10 +11,19 @@ vanilla SQL with params for Clojure/Script
 
 just "read SQL with `:params`"
 
+[![Clojars Project](https://clojars.org/tolitius/inquery/latest-version.svg)](http://clojars.org/tolitius/inquery)
+
+- [why](#why)
+- [using inquery](#using-inquery)
+  - [dynamic queries](#dynamic-queries)
+- [ClojureScript](#clojurescript)
+- [scratchpad](#scratchpad)
+- [license](#license)
+
 ## why
 
 SQL is a great language, it is very expressive and exremely well optimized and supported by "SQL" databases.
-I don't believe it needs any kind of wrappers. It should live in its pure SQL form.
+it needs no wrappers. it should live in its pure SQL form.
 
 `inquery` does two things:
 
@@ -124,10 +124,9 @@ boot.user=> (with-open [conn (jdbc/connection dbspec)]
 
 inquery can help out with some runtime decision making to build SQL predicates.
 
-`with-preds` function takes a map of `{pred-fn sql-predicate}`.
-for each "true" `pred-fn` `sql-predicate` will be added to the query:
+`with-preds` function takes a map of `{pred-fn sql-predicate}`.<br/>
+for each "true" predicate function its `sql-predicate` will be added to the query:
 
-```clojure
 ```clojure
 => (q/with-preds "select planet from solar_system where this = that"
                  {#(= 42 42) "and type = :type"})
@@ -153,7 +152,7 @@ if both predicates are true, both will be added:
 "select planet from solar_system where this = that and type = :type and size < :max-size"
 ```
 
-some queries don't come with `where`, for these cases `with-preds` takes a prefix:
+some queries don't come with `where` clause, for these cases `with-preds` takes a prefix:
 
 ```clojure
 => (q/with-preds "select planet from solar_system"
@@ -180,7 +179,8 @@ in case none of the predicates are true, `"where"` prefix won't be used:
 ```clojure
 => (q/with-preds "select planet from solar_system"
                   {#(= 42 -42) "and type = :type"
-                   #(= 34 28) "and size < :max-size"} {:prefix "where"})
+                   #(= 34 28) "and size < :max-size"}
+                   {:prefix "where"})
 
 "select planet from solar_system"
 ```
@@ -273,7 +273,7 @@ boot.user=> (sp/fetch dbspec (:find-planets-by-mass queries) {:max-mass 5973.6})
 
 ## license
 
-Copyright © 2017 tolitius
+Copyright © 2020 tolitius
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
