@@ -1,8 +1,10 @@
 (ns inquery.core
   #?(:clj (:require [clojure.java.io :as io]
-                    [clojure.string :as s])
+                    [clojure.string :as s]
+                    [inquery.pred :as pred])
      :cljs (:require [cljs.nodejs :as node]
-                     [clojure.string :as s])))
+                     [clojure.string :as s]
+                     [inquery.pred :as pred])))
 
 #?(:cljs
     (defn read-query [path qname]
@@ -51,6 +53,45 @@
         (map #(str "'" % "'") $)
         (s/join "," $)
         (str "(" $ ")")))
+
+(defn with-preds
+  "* adds predicates to the query
+   * if \"where\" needs to be prefixed add {:prefix \"where\"}
+   * will remove any SQL ops that a predicate starts with in case it needs to go right after \"where\"
+   * if none preds matched with \"where\" prefix the prefix won't be used
+
+  => (q/with-preds \"select foo from bar where this = that\"
+                    {#(= 42 42) \"and dog = :bow\"
+                    #(= 2 5) \"and cat = :moo\"
+                    #(= 28 28) \"or cow = :moo\"})
+
+  => \"select foo from bar
+       where this = that
+       and dog = :bow
+       or cow = :moo\"
+
+  ;; or with \"where\":
+
+  => (q/with-preds \"select foo from bar\"
+                    {#(= 42 42) \"and dog = :bow\"
+                    #(= 2 5) \"and cat = :moo\"
+                    #(= 28 28) \"or cow = :moo\"}
+                    {:prefix \"where\"})
+
+  => \"select foo from bar
+       where dog = :bow
+             or cow = :moo\"
+  "
+  ([query pred-map]
+   (with-preds query pred-map {}))
+  ([query pred-map {:keys [prefix]}]
+     (->> pred-map
+       (filter (comp pred/check-pred first))
+       vals
+       (interpose " ")
+       (apply str)
+       (pred/with-prefix prefix)
+       (str query " "))))
 
 (defn with-params
   ([query params]
