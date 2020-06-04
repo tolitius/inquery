@@ -62,8 +62,8 @@
 
   => (q/with-preds \"select foo from bar where this = that\"
                     {#(= 42 42) \"and dog = :bow\"
-                    #(= 2 5) \"and cat = :moo\"
-                    #(= 28 28) \"or cow = :moo\"})
+                     #(= 2 5) \"and cat = :moo\"
+                     #(= 28 28) \"or cow = :moo\"})
 
   => \"select foo from bar
        where this = that
@@ -74,9 +74,9 @@
 
   => (q/with-preds \"select foo from bar\"
                     {#(= 42 42) \"and dog = :bow\"
-                    #(= 2 5) \"and cat = :moo\"
-                    #(= 28 28) \"or cow = :moo\"}
-                    {:prefix \"where\"})
+                     #(= 2 5) \"and cat = :moo\"
+                     #(= 28 28) \"or cow = :moo\"}
+                     {:prefix \"where\"})
 
   => \"select foo from bar
        where dog = :bow
@@ -85,13 +85,13 @@
   ([query pred-map]
    (with-preds query pred-map {}))
   ([query pred-map {:keys [prefix]}]
-     (->> pred-map
-       (filter (comp pred/check-pred first))
-       vals
-       (interpose " ")
-       (apply str)
-       (pred/with-prefix prefix)
-       (str query " "))))
+   (->> pred-map
+        (filter (comp pred/check-pred first))
+        vals
+        (interpose " ")
+        (apply str)
+        (pred/with-prefix prefix)
+        (str query " "))))
 
 (defn with-params
   ([query params]
