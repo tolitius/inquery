@@ -54,6 +54,35 @@
         (s/join "," $)
         (str "(" $ ")")))
 
+(defn seq->update-vals [xs]
+  "convert seq of seqs to updatable values (to use in SQL batch updates):
+
+   => ;; xs
+      [[#uuid 'c7a344f2-0243-4f92-8a96-bfc7ee482a9c'
+        #uuid 'b29bc806-7db1-4e0c-93f7-fe5ee38ad1fa']
+       [#uuid '3236ebed-8248-4b07-a37e-c64c0a062247'
+        #uuid 'b29bc806-7db1-4e0c-93f7-fe5ee38ad1fa']]
+
+   => (sseq->values xs)
+
+      ('c7a344f2-0243-4f92-8a96-bfc7ee482a9c','b29bc806-7db1-4e0c-93f7-fe5ee38ad1fa'),
+      ('3236ebed-8248-4b07-a37e-c64c0a062247','b29bc806-7db1-4e0c-93f7-fe5ee38ad1fa')
+
+  to be able to plug them into something like:
+
+      update test as t set
+        column_a = c.column_a
+      from (values
+          ('123', 1),                << here
+          ('345', 2)                 << is a batch of values
+      ) as c(column_b, column_a)
+      where c.column_b = t.column_b;
+  "
+  (->> xs
+       (map seq->in-params)
+       (interpose ",")
+       (apply str)))
+
 (defn with-preds
   "* adds predicates to the query
    * if \"where\" needs to be prefixed add {:prefix \"where\"}
