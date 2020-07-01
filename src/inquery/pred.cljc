@@ -32,7 +32,7 @@
         qpart)))
 
 (defn with-prefix [prefix qpart]
-  (case (s/lower-case prefix)
+  (case (s/lower-case (or prefix ""))
     "where" (if (seq qpart)
               (str prefix " " (remove-start-ops qpart))
               qpart)
