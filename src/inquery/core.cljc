@@ -42,9 +42,10 @@
               :don't identity
               #(str "'" (s/replace % "'" "''") "'"))]
     (into {} (for [[k v] params]
-               [k (if (string? v)
-                    (esc v)
-                    (str v))]))))
+               [k (cond
+                    (string? v) (esc v)
+                    (nil? v) (esc "null")
+                    :else (str v))]))))
 
 (defn seq->in-params
   ;; convert seqs to IN params: i.e. [1 "2" 3] => "('1','2','3')"
