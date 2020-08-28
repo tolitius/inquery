@@ -15,6 +15,7 @@ just "read SQL with `:params`"
 
 - [why](#why)
 - [using inquery](#using-inquery)
+  - [escaping](#escaping)
   - [dynamic queries](#dynamic-queries)
 - [ClojureScript](#clojurescript)
 - [scratchpad](#scratchpad)
@@ -119,6 +120,56 @@ boot.user=> (with-open [conn (jdbc/connection dbspec)]
 
 [{:id 3, :name "Earth", :mass 5973.6M}]
 ```
+
+### escaping
+
+by default inquery will "SQL escape" all the parameters that need to be substituted in a query.
+
+in case you need to _not_ escape the params inquery has options to not escape the whole query with `{:esc :don't}`:
+
+```clojure
+=> (with-open [conn (jdbc/connection dbspec)]
+     (jdbc/fetch conn (-> (:find-planets-by-name queries)
+                      (q/with-params {:name "%art%"}
+                                     {:esc :don't}))))
+
+```
+
+or per individual parameter:
+
+```clojure
+=> (with-open [conn (jdbc/connection dbspec)]
+     (jdbc/fetch conn (-> (:find-planets-by-name queries)
+                      (q/with-params {:name {:as ""}}))))
+```
+
+#### things to note about escaping
+
+`nil`s are converted to "null":
+
+```clojure
+=> (-> "name = :name" (q/with-params {:name nil}))
+"name = null"
+```
+
+`{:as nil}` or `{:as ""}` is "as is", so it will be replaced with an empty string:
+
+```clojure
+=> (-> "name = :name" (q/with-params {:name {:as nil}}))
+"name = "
+
+=> (-> "name = :name" (q/with-params {:name ""}))
+"name = ''"
+```
+
+`""` will become a "SQL empty string":
+
+```clojure
+=> (-> "name = :name" (q/with-params {:name ""}))
+"name = ''"
+```
+
+see [tests](test/inquery/test/core.clj) for more examples.
 
 ### dynamic queries
 

@@ -34,6 +34,13 @@
                 (read-query path)
                 (vector qname))))))
 
+(defn treat-as? [k v]
+  (if (map? v)
+    (if (contains? v :as)  ;; TODO: later if more opts check validate all: (#{:as :foo :bar} op)
+      v
+      (throw (ex-info "invalid query substitution option. supported options are: #{:as}"
+                      {:key k :value v})))))
+
 (defn escape-params [params mode]
   (let [esc (case mode
               :ansi #(str \" (s/replace % "\"" "\"\"") \")  ;;
@@ -43,6 +50,7 @@
               #(str "'" (s/replace % "'" "''") "'"))]
     (into {} (for [[k v] params]
                [k (cond
+                    (treat-as? k v) (-> v :as str) ;; "no escape"
                     (= v "") "''"
                     (string? v) (esc v)
                     (nil? v) "null"

@@ -1,4 +1,4 @@
-(def +version+ "0.1.12")
+(def +version+ "0.1.13")
 
 (set-env!
   :source-paths #{"src"}
@@ -21,7 +21,7 @@
 (bootlaces! +version+)
 
 (defn uber-env []
-  (set-env! :source-paths #(conj % "dev"))
+  (set-env! :source-paths #(conj % "dev" "test"))
   (set-env! :resource-paths #(conj % "dev-resources")))
 
 (deftask dev []
