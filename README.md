@@ -152,14 +152,14 @@ or per individual parameter:
 "name = null"
 ```
 
-`{:as nil}` or `{:as ""}` is "as is", so it will be replaced with an empty string:
+`{:as nil}` or `{:as ""}` are "as is", so it will be replaced with an empty string:
 
 ```clojure
 => (-> "name = :name" (q/with-params {:name {:as nil}}))
 "name = "
 
-=> (-> "name = :name" (q/with-params {:name ""}))
-"name = ''"
+=> (-> "name = :name" (q/with-params {:name {:as ""}}))
+"name = "
 ```
 
 `""` will become a "SQL empty string":
