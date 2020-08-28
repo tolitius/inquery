@@ -43,6 +43,7 @@
               #(str "'" (s/replace % "'" "''") "'"))]
     (into {} (for [[k v] params]
                [k (cond
+                    (= v "") "''"
                     (string? v) (esc v)
                     (nil? v) (esc "null")
                     :else (str v))]))))
