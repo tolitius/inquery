@@ -140,7 +140,8 @@ or per individual parameter with `{:as val}`:
 ```clojure
 => (with-open [conn (jdbc/connection dbspec)]
      (jdbc/fetch conn (-> (:find-planets-by-name queries)
-                      (q/with-params {:name {:as ""}}))))
+                      (q/with-params {:name {:as ""}
+                                      :mass 42}))))
 ```
 
 #### things to note about escaping
