@@ -135,7 +135,7 @@ in case you need to _not_ escape the params inquery has options to not escape th
 
 ```
 
-or per individual parameter:
+or per individual parameter with `{:as val}`:
 
 ```clojure
 => (with-open [conn (jdbc/connection dbspec)]
