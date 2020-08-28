@@ -45,7 +45,7 @@
                [k (cond
                     (= v "") "''"
                     (string? v) (esc v)
-                    (nil? v) (esc "null")
+                    (nil? v) "null"
                     :else (str v))]))))
 
 (defn seq->in-params
