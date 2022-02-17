@@ -1,0 +1,30 @@
+{:paths ["src"]
+
+ :deps {} ;; no deps
+
+ :aliases {:dev {:extra-paths ["dev" "dev-resources"]
+                 :extra-deps {funcool/clojure.jdbc {:mvn/version "0.9.0"}
+                              com.h2database/h2    {:mvn/version "1.4.195"}}}
+           :test {:extra-paths ["test" "test/resources"]
+                  :extra-deps {io.github.cognitect-labs/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                                                     :sha "e7660458ce25bc4acb4ccc3e2415aae0a4907198"}}
+                  :main-opts ["-m" "cognitect.test-runner"]
+                  :exec-fn cognitect.test-runner.api/test}
+           :repl {:extra-paths ["test" "test/resources"]
+                  :extra-deps {nrepl/nrepl {:mvn/version "0.7.0"}
+                               cider/cider-nrepl {:mvn/version "0.22.4"}
+                               com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
+                  :main-opts [;; "-e" "(require 'dev)(in-ns 'dev)"
+                              "-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"
+                              "-i" "-f" "rebel-readline.main/-main"]}
+           :outdated {:extra-deps {olical/depot {:mvn/version "2.0.1"}}
+                      :main-opts  ["-m" "depot.outdated.main" "-a" "outdated"]}
+           :tag {:extra-deps {tolitius/tag {:mvn/version "0.1.7"}}
+                 :main-opts ["-m" "tag.core" "tolitius/inquery" "vanilla SQL with params for clojure/script"]}
+           :jar {:extra-deps {seancorfield/depstar {:mvn/version "1.1.128"}}
+                 :extra-paths ["target/about"]
+                 :main-opts ["-m" "hf.depstar.jar" "target/inquery.jar" "--exclude" "clojure/core/specs/alpha.*"]}
+           :deploy {:extra-deps {deps-deploy/deps-deploy {:mvn/version "RELEASE"}}
+                    :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "target/inquery.jar"]}
+           :install {:extra-deps {deps-deploy/deps-deploy {:mvn/version "RELEASE"}}
+                     :main-opts ["-m" "deps-deploy.deps-deploy" "install" "target/inquery.jar"]}}}

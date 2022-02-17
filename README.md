@@ -43,24 +43,22 @@ a sample [H2](http://www.h2database.com/html/main.html) database since both of t
 There is nothing really to do other than to bring the queries into a map with a `make-query-map` function:
 
 ```clojure
-$ boot dev
+$ make repl
 
-boot.user=> (require '[inquery.core :as q]
-                     '[jdbc.core :as jdbc])
+=> (require '[inquery.core :as q]
+            '[jdbc.core :as jdbc])
 ```
 
 `dbspec` along with a `set of queries` would usually come from `config.edn` / consul / etc :
 
 ```clojure
-boot.user=> (def dbspec
-              {:subprotocol "h2"
-               :subname "file:/tmp/solar"})
+=> (def dbspec {:subprotocol "h2"
+                :subname "file:/tmp/solar"})
 
-boot.user=> (def queries
-              (q/make-query-map #{:create-planets
-                                  :find-planets
-                                  :find-planets-by-mass
-                                  :find-planets-by-name}))
+=> (def queries (q/make-query-map #{:create-planets
+                                    :find-planets
+                                    :find-planets-by-mass
+                                    :find-planets-by-name}))
 ```
 
 `inquiry` by default will look under `sql/*` path for queries. In this case "[dev-resources](dev-resources)" is in a classpath:
@@ -76,15 +74,15 @@ boot.user=> (def queries
 Ready to roll, let's create some planets:
 
 ```clojure
-boot.user=> (with-open [conn (jdbc/connection dbspec)]
-              (jdbc/execute conn (:create-planets queries)))
+=> (with-open [conn (jdbc/connection dbspec)]
+     (jdbc/execute conn (:create-planets queries)))
 ```
 
 check out the solar system:
 
 ```clojure
-boot.user=> (with-open [conn (jdbc/connection dbspec)]
-              (jdbc/fetch conn (:find-planets queries)))
+=> (with-open [conn (jdbc/connection dbspec)]
+     (jdbc/fetch conn (:find-planets queries)))
 
 [{:id 1, :name "Mercury", :mass 330.2M}
  {:id 2, :name "Venus", :mass 4868.5M}
@@ -100,9 +98,9 @@ boot.user=> (with-open [conn (jdbc/connection dbspec)]
 find all the planets with mass less or equal to the mass of Earth:
 
 ```clojure
-boot.user=> (with-open [conn (jdbc/connection dbspec)]
-              (jdbc/fetch conn (-> (:find-planets-by-mass queries)
-                                   (q/with-params {:max-mass 5973.6}))))
+=> (with-open [conn (jdbc/connection dbspec)]
+     (jdbc/fetch conn (-> (:find-planets-by-mass queries)
+                          (q/with-params {:max-mass 5973.6}))))
 
 [{:id 1, :name "Mercury", :mass 330.2M}
  {:id 2, :name "Venus", :mass 4868.5M}
@@ -114,9 +112,9 @@ boot.user=> (with-open [conn (jdbc/connection dbspec)]
 which planet is the most `art`sy:
 
 ```clojure
-boot.user=> (with-open [conn (jdbc/connection dbspec)]
-              (jdbc/fetch conn (-> (:find-planets-by-name queries)
-                               (q/with-params {:name "%art%"}))))
+=> (with-open [conn (jdbc/connection dbspec)]
+     (jdbc/fetch conn (-> (:find-planets-by-name queries)
+                      (q/with-params {:name "%art%"}))))
 
 [{:id 3, :name "Earth", :mass 5973.6M}]
 ```
@@ -298,13 +296,14 @@ select * from planets where mass <= 5973.6
 development [scratchpad](dev/scratchpad.clj) with sample shortcuts:
 
 ```clojure
-$ boot dev
+$ make repl
 
-boot.user=> (require '[scratchpad :as sp :refer [dbspec queries]])
+=> (require '[scratchpad :as sp :refer [dbspec queries]])
 
-boot.user=> (sp/execute dbspec (:create-planets queries))
+=> (sp/execute dbspec (:create-planets queries))
 
-boot.user=> (sp/fetch dbspec (:find-planets queries))
+=> (sp/fetch dbspec (:find-planets queries))
+
 [{:id 1, :name "Mercury", :mass 330.2M}
  {:id 2, :name "Venus", :mass 4868.5M}
  {:id 3, :name "Earth", :mass 5973.6M}
@@ -315,7 +314,8 @@ boot.user=> (sp/fetch dbspec (:find-planets queries))
  {:id 8, :name "Neptune", :mass 102430M}
  {:id 9, :name "Pluto", :mass 13.105M}]
 
-boot.user=> (sp/fetch dbspec (:find-planets-by-mass queries) {:max-mass 5973.6})
+=> (sp/fetch dbspec (:find-planets-by-mass queries) {:max-mass 5973.6})
+
 [{:id 1, :name "Mercury", :mass 330.2M}
  {:id 2, :name "Venus", :mass 4868.5M}
  {:id 3, :name "Earth", :mass 5973.6M}
@@ -325,7 +325,7 @@ boot.user=> (sp/fetch dbspec (:find-planets-by-mass queries) {:max-mass 5973.6})
 
 ## license
 
-Copyright © 2020 tolitius
+Copyright © 2022 tolitius
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
