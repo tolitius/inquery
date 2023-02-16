@@ -40,4 +40,50 @@
       (is (= "select * from planets where moons = 'up-and-down' and mass <= 42 and name = 'quettabit'"
              (sub q {:super-position-moons "up-and-down"
                      :super 42
-                     :super-position "quettabit"}))))))
+                     :super-position "quettabit"})))))
+
+  (testing "should correctly sub params that start with the same prefix, even when some of the keys have the same length"
+    (let [q   "select * from planets where moons = :super-position-moons and mass <= :super and name = :super-position and orbital_offset = :orbital-offset and orbital_offset_looks = :orbital-offset-looks"
+          sub (fn [q m] (-> q (q/with-params m)))]
+      (is (= "select * from planets where moons = 'up-and-down' and mass <= 42 and name = 'quettabit' and orbital_offset = 'acute' and orbital_offset_looks = 'wobbly'"
+             (sub q {:super-position-moons "up-and-down"
+                     :orbital-offset-looks "wobbly"
+                     :orbital-offset "acute"
+                     :super-position "quettabit"
+                     :super 42})))
+      (is (= "select * from planets where moons = 'up-and-down' and mass <= 42 and name = 'quettabit' and orbital_offset = 'acute' and orbital_offset_looks = 'wobbly'"
+             (sub q {:orbital-offset-looks "wobbly"
+                     :super-position-moons "up-and-down"
+                     :super-position "quettabit"
+                     :orbital-offset "acute"
+                     :super 42})))
+      (is (= "select * from planets where moons = 'up-and-down' and mass <= 42 and name = 'quettabit' and orbital_offset = 'acute' and orbital_offset_looks = 'wobbly'"
+             (sub q {:super 42
+                     :super-position "quettabit"
+                     :super-position-moons "up-and-down"
+                     :orbital-offset "acute"
+                     :orbital-offset-looks "wobbly"})))
+      (is (= "select * from planets where moons = 'up-and-down' and mass <= 42 and name = 'quettabit' and orbital_offset = 'acute' and orbital_offset_looks = 'wobbly'"
+             (sub q {:super-position "quettabit"
+                     :super-position-moons "up-and-down"
+                     :super 42
+                     :orbital-offset "acute"
+                     :orbital-offset-looks "wobbly"})))
+      (is (= "select * from planets where moons = 'up-and-down' and mass <= 42 and name = 'quettabit' and orbital_offset = 'acute' and orbital_offset_looks = 'wobbly'"
+             (sub q {:orbital-offset-looks "wobbly"
+                     :super-position "quettabit"
+                     :orbital-offset "acute"
+                     :super 42
+                     :super-position-moons "up-and-down"})))
+      (is (= "select * from planets where moons = 'up-and-down' and mass <= 42 and name = 'quettabit' and orbital_offset = 'acute' and orbital_offset_looks = 'wobbly'"
+             (sub q {:super 42
+                     :super-position "quettabit"
+                     :orbital-offset "acute"
+                     :super-position-moons "up-and-down"
+                     :orbital-offset-looks "wobbly"})))
+      (is (= "select * from planets where moons = 'up-and-down' and mass <= 42 and name = 'quettabit' and orbital_offset = 'acute' and orbital_offset_looks = 'wobbly'"
+             (sub q {:super 42
+                     :orbital-offset "acute"
+                     :super-position "quettabit"
+                     :orbital-offset-looks "wobbly"
+                     :super-position-moons "up-and-down"}))))))

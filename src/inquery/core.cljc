@@ -134,8 +134,8 @@
 
 (defn- compare-key-length [k1 k2]
   (let [length #(-> % str count)]
-    (compare (length k2)
-             (length k1))))
+    (compare [(length k2) k2]
+             [(length k1) k1])))
 
 (defn with-params
   ([query params]
