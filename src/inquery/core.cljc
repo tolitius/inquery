@@ -132,12 +132,18 @@
         (pred/with-prefix prefix)
         (str query " "))))
 
+(defn- compare-key-length [k1 k2]
+  (let [length #(-> % str count)]
+    (compare (length k2)
+             (length k1))))
+
 (defn with-params
   ([query params]
    (with-params query params {}))
   ([query params {:keys [esc]}]
    (if (seq query)
-     (let [eparams (escape-params params esc)]
+     (let [eparams (->> (escape-params params esc)
+                        (into (sorted-map-by compare-key-length)))]
        (reduce-kv (fn [q k v]
                     (s/replace q (str k) v))
                   query eparams))
