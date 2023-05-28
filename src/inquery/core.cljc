@@ -51,7 +51,6 @@
     (into {} (for [[k v] params]
                [k (cond
                     (treat-as? k v) (-> v :as str) ;; "no escape"
-                    (= v "") "''"
                     (string? v) (esc v)
                     (nil? v) "null"
                     :else (str v))]))))

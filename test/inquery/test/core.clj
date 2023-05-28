@@ -1,8 +1,7 @@
  (ns inquery.test.core
-  (:require [inquery.core :as q]
-            [clojure.edn :as edn]
-            [clojure.pprint :as pp]
-            [clojure.test :refer :all]))
+   (:require [clojure.string :as str]
+             [inquery.core :as q]
+             [clojure.test :refer [deftest is testing]]))
 
 (deftest should-sub-params
   (testing "should sub params"
@@ -16,7 +15,17 @@
       (is (= "select * from planets where mass <=  and name = ''''''"     (sub q {:max-mass {:as nil} :name "''"})))
       (is (= "select * from planets where mass <= '' and name = ''''''"   (sub q {:max-mass {:as "''"} :name "''"})))
       (is (= "select * from planets where mass <=  and name = ''"         (-> q (q/with-params {:max-mass {:as nil} :name "''"}
-                                                                                               {:esc :don't})))))))
+                                                                                               {:esc :don't}))))))
+
+  (testing "should respect :esc"
+    (doseq [mode [:ansi :mysql :mssql :anything-else]]
+      (testing (str "when :esc is " mode)
+        (is (not (str/blank? (q/with-params ":foo" {:foo ""} {:esc mode}))) "blank param should be replaced with some kind of escaping")))
+
+    (testing "but when :esc is :don't"
+      (let [q ":foo"]
+        (is (str/blank? (q/with-params q {:foo ""} {:esc :don't})) "blank param should be blank")))))
+
 (deftest should-sub-starts-with-params
   (testing "should correctly sub params that start with the same prefix"
     (let [q    "select * from planets where moons = :super-position-moons and mass <= :super and name = :super-position"
