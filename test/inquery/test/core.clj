@@ -16,7 +16,12 @@
       (is (= "select * from planets where mass <=  and name = ''''''"     (sub q {:max-mass {:as nil} :name "''"})))
       (is (= "select * from planets where mass <= '' and name = ''''''"   (sub q {:max-mass {:as "''"} :name "''"})))
       (is (= "select * from planets where mass <=  and name = ''"         (-> q (q/with-params {:max-mass {:as nil} :name "''"}
-                                                                                               {:esc :don't})))))))
+                                                                                  {:esc :don't}))))))
+  (testing "should sub params in the right order"
+    (let [q "(:stage, :stage-modified-at)"]
+      (is (= "('DRAFT', '2022-10-03', '2022-10-03')" (q/with-params q {:stage             "DRAFT"
+                                                                       :stage-modified-at "2022-10-03"}))))))
+
 (deftest should-sub-starts-with-params
   (testing "should correctly sub params that start with the same prefix"
     (let [q    "select * from planets where moons = :super-position-moons and mass <= :super and name = :super-position"
