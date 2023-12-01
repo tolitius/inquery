@@ -1,8 +1,6 @@
  (ns inquery.test.core
-  (:require [inquery.core :as q]
-            [clojure.edn :as edn]
-            [clojure.pprint :as pp]
-            [clojure.test :refer :all]))
+   (:require [inquery.core :as q]
+             [clojure.test :refer [deftest testing is]]))
 
 (deftest should-sub-params
   (testing "should sub params"
