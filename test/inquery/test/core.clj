@@ -87,3 +87,16 @@
                      :super-position "quettabit"
                      :orbital-offset-looks "wobbly"
                      :super-position-moons "up-and-down"}))))))
+
+(deftest should-sub-batch-upserts
+  (testing "should correctly sub params for values in batch upserts"
+    (let [q    "insert into planets (\"id\", \"system\", \"planet\") values :planets"
+          sub   (fn [q vs] (-> q (q/with-params {:planets {:as (q/seq->update-vals vs)}})))]
+      (is (= (str "insert into planets (\"id\", \"system\", \"planet\") "
+                  "values "
+                  "('42','solar','earth'),"
+                  "('34',null,'saturn'),"
+                  "('28','','pluto')")
+             (sub q [[42 "solar" "earth"]
+                     [34 nil "saturn"]
+                     [28 "" "pluto"]]))))))

@@ -56,11 +56,29 @@
                     (nil? v) "null"
                     :else (str v))]))))
 
+(defn fnull
+  "nil to null
+   otherwise SQL string the param
+
+  => (fnull 42)
+     \"'42'\"
+
+  => (fnull nil)
+     \"null\"
+
+  => (fnull \"\")
+     \"''\"
+  "
+  [param]
+  (if (nil? param)
+    "null"
+    (str "'" param "'")))
+
 (defn seq->in-params
   ;; convert seqs to IN params: i.e. [1 "2" 3] => "('1','2','3')"
   [xs]
   (as-> xs $
-        (map #(str "'" % "'") $)
+        (mapv fnull $)
         (s/join "," $)
         (str "(" $ ")")))
 
