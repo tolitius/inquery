@@ -103,11 +103,13 @@
 
 (deftest should-do-utils
   (testing "should do utilities functions"
-      (is (= (q/esc-str "foo b'ar")
+      (is (= (q/esc "foo b'ar")
                         "foo b''ar"))
-      (is (= (q/esc-str "'foo b'ar")
+      (is (= (q/esc "'foo b'ar")
                         "''foo b''ar"))
-      (is (= (q/esc-str "'foo bar'")
+      (is (= (q/esc "'foo bar'")
                         "''foo bar''"))
-      (is (= (q/esc-str "foo bar")
+      (is (= (q/esc 42)
+                    42))
+      (is (= (q/esc "foo bar")
                         "foo bar"))))

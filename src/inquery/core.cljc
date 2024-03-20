@@ -41,21 +41,24 @@
       (throw (ex-info "invalid query substitution option. supported options are: #{:as}"
                       {:key k :value v})))))
 
-(defn esc-str [v]
-  (s/replace v "'" "''"))
+(defn esc
+  ;; TODO: add other data types if/when needed
+  [v]
+  (cond (string? v) (s/replace v "'" "''")
+        :else       v))
 
 (defn escape-params [params mode]
-  (let [esc (case mode
-              :ansi #(str \" (s/replace % "\"" "\"\"") \")  ;;
-              :mysql #(str \` (s/replace % "`" "``") \`)    ;; TODO: maybe later when returning a sqlvec
-              :mssql #(str \[ (s/replace % "]" "]]") \])    ;;
-              :don't identity
-              #(str "'" (s/replace % "'" "''") "'"))]
+  (let [esc# (case mode
+               :ansi #(str \" (s/replace % "\"" "\"\"") \")  ;;
+               :mysql #(str \` (s/replace % "`" "``") \`)    ;; TODO: maybe later when returning a sqlvec
+               :mssql #(str \[ (s/replace % "]" "]]") \])    ;;
+               :don't identity
+               #(str "'" (esc %) "'"))]
     (into {} (for [[k v] params]
                [k (cond
                     (treat-as? k v) (-> v :as str) ;; "no escape"
                     (= v "") "''"
-                    (string? v) (esc v)
+                    (string? v) (esc# v)
                     (nil? v) "null"
                     :else (str v))]))))
 

@@ -1,6 +1,6 @@
-# 0.1.18
+# 0.1.19
 
-* add `esc-str`
+* add `esc` function
 
 # 0.1.17
 
