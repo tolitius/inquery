@@ -41,6 +41,9 @@
       (throw (ex-info "invalid query substitution option. supported options are: #{:as}"
                       {:key k :value v})))))
 
+(defn esc-str [v]
+  (s/replace v "'" "''"))
+
 (defn escape-params [params mode]
   (let [esc (case mode
               :ansi #(str \" (s/replace % "\"" "\"\"") \")  ;;

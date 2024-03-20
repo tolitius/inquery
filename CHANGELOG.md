@@ -1,3 +1,7 @@
+# 0.1.18
+
+* add `esc-str`
+
 # 0.1.17
 
 * have "`seq->update-vals`" return 'null's for nils

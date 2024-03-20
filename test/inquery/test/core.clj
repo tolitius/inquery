@@ -100,3 +100,14 @@
              (sub q [[42 "solar" "earth"]
                      [34 nil "saturn"]
                      [28 "" "pluto"]]))))))
+
+(deftest should-do-utils
+  (testing "should do utilities functions"
+      (is (= (q/esc-str "foo b'ar")
+                        "foo b''ar"))
+      (is (= (q/esc-str "'foo b'ar")
+                        "''foo b''ar"))
+      (is (= (q/esc-str "'foo bar'")
+                        "''foo bar''"))
+      (is (= (q/esc-str "foo bar")
+                        "foo bar"))))
