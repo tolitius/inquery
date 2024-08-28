@@ -1,10 +1,12 @@
 (ns inquery.core
   #?(:clj (:require [clojure.java.io :as io]
                     [clojure.string :as s]
-                    [inquery.pred :as pred])
+                    [inquery.pred :as pred]
+                    [inquery.prepared-statement :as ps])
      :cljs (:require [cljs.nodejs :as node]
                      [clojure.string :as s]
-                     [inquery.pred :as pred])))
+                     [inquery.pred :as pred]
+                     [inquery.prepared-statement :as ps])))
 
 #?(:cljs
     (defn read-query [path qname]
@@ -164,11 +166,12 @@
 (defn with-params
   ([query params]
    (with-params query params {}))
-  ([query params {:keys [esc]}]
-   (if (seq query)
-     (let [eparams (->> (escape-params params esc)
+  ([query params {:keys [esc prepared?] :as opts}]
+   (cond
+     (not (seq query)) (throw (ex-info "can't execute an empty query" {:params params}))
+     prepared? (ps/with-params query params opts)
+     :else (let [eparams (->> (escape-params params esc)
                         (into (sorted-map-by compare-key-length)))]
        (reduce-kv (fn [q k v]
                     (s/replace q (str k) v))
-                  query eparams))
-     (throw (ex-info "can't execute an empty query" {:params params})))))
+                  query eparams)))))
