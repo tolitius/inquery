@@ -58,7 +58,9 @@
                [k (cond
                     (treat-as? k v) (-> v :as str) ;; "no escape"
                     (= v "") "''"
-                    (string? v) (esc# v)
+                    (or (string? v)
+                        (uuid? v)
+                        (inst? v)) (esc# v)
                     (nil? v) "null"
                     :else (str v))]))))
 
@@ -88,7 +90,7 @@
         (s/join "," $)
         (str "(" $ ")")))
 
-(defn seq->update-vals [xs]
+(defn seq->update-vals
   "convert seq of seqs to updatable values (to use in SQL batch updates):
 
    => ;; xs
@@ -112,6 +114,7 @@
       ) as c(column_b, column_a)
       where c.column_b = t.column_b;
   "
+  [xs]
   (->> xs
        (map seq->in-params)
        (interpose ",")

@@ -2,7 +2,8 @@
   (:require [inquery.core :as q]
             [clojure.edn :as edn]
             [clojure.pprint :as pp]
-            [clojure.test :refer :all]))
+            [clojure.test :refer :all])
+  (:import java.time.Instant))
 
 (deftest should-sub-params
   (testing "should sub params"
@@ -16,7 +17,21 @@
       (is (= "select * from planets where mass <=  and name = ''''''"     (sub q {:max-mass {:as nil} :name "''"})))
       (is (= "select * from planets where mass <= '' and name = ''''''"   (sub q {:max-mass {:as "''"} :name "''"})))
       (is (= "select * from planets where mass <=  and name = ''"         (-> q (q/with-params {:max-mass {:as nil} :name "''"}
-                                                                                               {:esc :don't})))))))
+                                                                                  {:esc :don't})))))
+    (testing "param is #uuid"
+        (let [q  "select * from planets where id = :planet-id"
+              sub   (fn [q m] (-> q (q/with-params m)))
+              planet-id (random-uuid)]
+          (is (= (str "select * from planets where id = '" planet-id "'")
+                 (sub q {:planet-id planet-id})))))
+
+    (testing "param is #time/instant"
+        (let [q  "select * from planets where id = :imploded-at"
+              sub   (fn [q m] (-> q (q/with-params m)))
+              imploded-at (Instant/now)]
+          (is (= (str "select * from planets where id = '" (.toString imploded-at) "'")
+                 (sub q {:imploded-at imploded-at})))))))
+
 (deftest should-sub-starts-with-params
   (testing "should correctly sub params that start with the same prefix"
     (let [q    "select * from planets where moons = :super-position-moons and mass <= :super and name = :super-position"
