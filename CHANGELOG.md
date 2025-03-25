@@ -1,3 +1,7 @@
+# 0.1.20
+
+* add support for #inst and #uuid literals (thanks to [@arichiardi](https://github.com/arichiardi))
+
 # 0.1.19
 
 * add `esc` function
