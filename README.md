@@ -17,6 +17,8 @@ just "read SQL with `:params`"
 - [using inquery](#using-inquery)
   - [escaping](#escaping)
   - [dynamic queries](#dynamic-queries)
+- [type safety](#type-safety)
+- [batch upserts](#batch-upserts)
 - [ClojureScript](#clojurescript)
 - [scratchpad](#scratchpad)
 - [license](#license)
@@ -235,6 +237,147 @@ in case none of the predicates are true, `"where"` prefix won't be used:
 "select planet from solar_system"
 ```
 
+## type safety
+
+### sql parameters
+
+inquery uses a type protocol `SqlParam` to safely convert clojure/script values to sql strings:
+
+```clojure
+(defprotocol SqlParam
+  "safety first"
+  (to-sql-string [this] "trusted type will be SQL'ized"))
+```
+
+it:
+
+* prevents sql injection
+* properly handles various data types
+* is extensible for custom types
+
+common types are handled out of the box:
+
+```clojure
+(q/to-sql-string nil)                                        ;; => "null"
+(q/to-sql-string "earth")                                    ;; => "'earth'"
+(q/to-sql-string "pluto's moon")                             ;; => "'pluto''s moon'"  ;; note proper escaping
+(q/to-sql-string 42)                                         ;; => "42"
+(q/to-sql-string true)                                       ;; => "true"
+(q/to-sql-string :jupiter)                                   ;; => "'jupiter'"
+(q/to-sql-string [1 2 nil "mars"])                           ;; => "(1,2,null,'mars')"
+(q/to-sql-string #uuid "f81d4fae-7dec-11d0-a765-00a0c91e6bf6") ;; => "'f81d4fae-7dec-11d0-a765-00a0c91e6bf6'"
+(q/to-sql-string #inst "2023-01-15T12:34:56Z")               ;; => "'2023-01-15T12:34:56Z'"
+(q/to-sql-string (java.util.Date.))                          ;; => "'Wed Mar 26 09:42:17 EDT 2025'"
+```
+
+### custom types
+
+you can extend `SqlParam` protocol to handle custom types:
+
+```clojure
+(defrecord Planet [name mass])
+
+(extend-protocol inquery.core/SqlParam
+  Planet
+  (to-sql-string [planet]
+    (str "'" (:name planet) " (" (:mass planet) " x 10^24 kg)'")))
+
+(q/to-sql-string (->Planet "neptune" 102)) ;; => "'neptune (102 x 10^24 kg)'"
+```
+
+### its built in
+
+no need to call "`to-sql-string`" of course, inquery does it internally:
+
+```clojure
+;; find planets discovered during specific time range with certain composition types
+(let [query "SELECT * FROM planets
+             WHERE discovery_date BETWEEN :start_date AND :end_date
+             AND name NOT IN :excluded_planets
+             AND composition_type IN :allowed_types
+             AND is_habitable = :habitable
+             AND discoverer_id = :discoverer"
+      params {:start_date (Instant/parse "2020-01-01T00:00:00Z")
+              :end_date (java.util.Date.)
+              :excluded_planets ["mercury" "venus" "earth"]
+              :allowed_types [:rocky :gas-giant :ice-giant]
+              :habitable true
+              :discoverer (UUID/fromString "f81d4fae-7dec-11d0-a765-00a0c91e6bf6")}]
+
+  (q/with-params query params))
+```
+```clojure
+;; => "SELECT * FROM planets
+;;     WHERE discovery_date BETWEEN '2020-01-01T00:00:00Z' AND 'Wed Mar 26 09:48:32 EDT 2025'
+;;     AND name NOT IN ('mercury','venus','earth')
+;;     AND composition_type IN ('rocky','gas-giant','ice-giant')
+;;     AND is_habitable = true
+;;     AND discoverer_id = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6'"
+```
+
+## batch upserts
+
+inquery provides functions to safely convert collections for batch operations:
+
+* `seq->batch-params` - converts a sequence of sequences to a string suitable for batch inserts/updates
+* `seq->update-vals` - legacy version that quotes all values (even numbers)
+
+```clojure
+;; using seq->batch-params for modern batch operations
+;; (perfect for cataloging newly discovered exoplanets)
+(q/seq->batch-params [[42 "earth" 5973.6]
+                      ["34" nil "saturn"]])
+;; => "(42,'earth',5973.6),('34',null,'saturn')"
+
+;; safe handling of UUIDs, timestamps, and other complex types
+;; (for when you need to record celestial events)
+(let [uuid1 (UUID/fromString "f81d4fae-7dec-11d0-a765-00a0c91e6bf6")
+      timestamp (Instant/parse "2023-01-15T12:34:56Z")]
+  (q/seq->batch-params [[uuid1 "planet" "earth" timestamp]]))
+;; => "('f81d4fae-7dec-11d0-a765-00a0c91e6bf6','planet','earth','2023-01-15T12:34:56Z')"
+```
+
+and the real SQL example:
+
+```clojure
+;; batch insert new celestial bodies with mixed data types
+(let [query "INSERT INTO celestial_bodies
+              (id, name, type, mass, discovery_date, is_confirmed)
+             VALUES :bodies"
+
+      ;; collection of [id, name, type, mass, date, confirmed?]
+      bodies [[#uuid "c7a344f2-0243-4f92-8a96-bfc7ee482a9c"
+               "kepler-186f"
+               :exoplanet
+               4.7
+               #inst "2014-04-17T00:00:00Z"
+               true]
+
+              [#uuid "3236ebed-8248-4b07-a37e-c64c0a062247"
+               "toi-700d"
+               :exoplanet
+               1.72
+               #inst "2020-01-07T00:00:00Z"
+               true]
+
+              [#uuid "b29bc806-7db1-4e0c-93f7-fe5ee38ad1fa"
+               "proxima centauri b"
+               :exoplanet
+               1.27
+               #inst "2016-08-24T00:00:00Z"
+               nil]]]
+
+  (q/with-params query {:bodies {:as (q/seq->batch-params bodies)}}))
+```
+```clojure
+;; => "INSERT INTO celestial_bodies
+;;       (id, name, type, mass, discovery_date, is_confirmed)
+;;     VALUES
+;;       ('c7a344f2-0243-4f92-8a96-bfc7ee482a9c','kepler-186f','exoplanet',4.7,'2014-04-17T00:00:00Z',true),
+;;       ('3236ebed-8248-4b07-a37e-c64c0a062247','toi-700d','exoplanet',1.72,'2020-01-07T00:00:00Z',true),
+;;       ('b29bc806-7db1-4e0c-93f7-fe5ee38ad1fa','proxima centauri b','exoplanet',1.27,'2016-08-24T00:00:00Z',null)"
+```
+
 ## ClojureScript
 
 ```clojure
@@ -325,7 +468,7 @@ $ make repl
 
 ## license
 
-Copyright © 2022 tolitius
+Copyright © 2025 tolitius
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
