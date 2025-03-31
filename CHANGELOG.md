@@ -1,3 +1,12 @@
+# 0.1.22
+
+* add support for LocalDate SqlParam (thanks to [@arichiardi](https://github.com/arichiardi))
+
+# 0.1.21
+
+* add [SqlParam](https://github.com/tolitius/inquery?tab=readme-ov-file#type-safety)
+* w/ built in batching for `insert` and `update` queries
+
 # 0.1.20
 
 * add support for #inst and #uuid literals (thanks to [@arichiardi](https://github.com/arichiardi))
