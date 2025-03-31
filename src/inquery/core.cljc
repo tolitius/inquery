@@ -29,6 +29,9 @@
   #?(:clj java.time.Instant)
   #?(:clj (to-sql-string [i] (str "'" (.toString i) "'")))
 
+  #?(:clj java.time.LocalDate)
+  #?(:clj (to-sql-string [d] (str "'" (.toString d) "'")))
+
   #?(:clj java.util.Date :cljs js/Date)
   (to-sql-string [d] (str "'" d "'"))
 

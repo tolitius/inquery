@@ -4,6 +4,7 @@
             [clojure.pprint :as pp]
             [clojure.test :refer :all])
   (:import java.time.Instant
+           java.time.LocalDate
            java.util.Date
            java.util.UUID))
 
@@ -298,13 +299,14 @@
     (let [query "SELECT * FROM celestial_objects WHERE type IN :types AND id IN :ids AND discovery_date IN :dates"]
       (is (= (str "SELECT * FROM celestial_objects WHERE type IN ('planet','moon','asteroid') AND "
                  "id IN ('f81d4fae-7dec-11d0-a765-00a0c91e6bf6','bdd21ce1-24d5-4180-9307-7f560bb0e9e3') AND "
-                 "discovery_date IN ('2023-01-15T12:34:56Z','2023-02-20T15:30:00Z')")
+                 "discovery_date IN ('2023-01-15T12:34:56Z','2023-02-20T15:30:00Z','2023-03-31')")
              (q/with-params query
                            {:types ["planet" "moon" "asteroid"]
                             :ids [(UUID/fromString "f81d4fae-7dec-11d0-a765-00a0c91e6bf6")
                                   (UUID/fromString "bdd21ce1-24d5-4180-9307-7f560bb0e9e3")]
                             :dates [(Instant/parse "2023-01-15T12:34:56Z")
-                                    (Instant/parse "2023-02-20T15:30:00Z")]}))))))
+                                    (Instant/parse "2023-02-20T15:30:00Z")
+                                    (LocalDate/parse "2023-03-31")]}))))))
 
 (deftest should-build-complex-queries-with-mixed-parameters
   (testing "should build complex queries with mixed scalar and collection parameters"
