@@ -4,7 +4,7 @@
 
 (defn check-pred [pred]
   (if (fn? pred)
-    (.invoke pred)
+    (pred)
     (throw (ex-info "predicate should be a function" {:instead-got pred}))))
 
 (defn value? [v]
