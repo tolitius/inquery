@@ -1,3 +1,7 @@
+# 0.1.23
+
+* remove .invoke to avoid reflection warning (thanks to [@danielmiladinov](https://github.com/danielmiladinov))
+
 # 0.1.22
 
 * add support for LocalDate SqlParam (thanks to [@arichiardi](https://github.com/arichiardi))
